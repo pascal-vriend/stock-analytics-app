@@ -8,9 +8,7 @@ export function useApi() {
 
         // get a token if we don't have one
         if (!token) {
-            console.log("no access token: refreshing");
-            token = await refreshAccessToken(); // ← use returned token
-            console.log("finished refreshing");
+            token = await refreshAccessToken();
         }
 
         const headers: HeadersInit = {
@@ -18,7 +16,6 @@ export function useApi() {
             ...(options.headers ?? {}),
         };
         if (token) headers['Authorization'] = `Bearer ${token}`;
-        console.log("Fetching with token:", token);
 
         const first = await fetch(url, {
             ...options,

@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_PATHS = ['/home', '/profile', '/settings'];
+const PROTECTED_PATHS = ['/dashboard', '/profile', '/settings'];
 const LOGIN_PATH = '/login';
 
 export function middleware(request: NextRequest) {

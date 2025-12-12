@@ -1,4 +1,4 @@
-rootProject.name = "student-house-app"
+rootProject.name = "stock-analytics-app"
 
 include("back-end:auth-service")
 project(":back-end:auth-service").projectDir = file("back-end/auth-service")
@@ -12,5 +12,5 @@ project(":back-end:eureka-server").projectDir = file("back-end/eureka-server")
 include("back-end:finance-service")
 project(":back-end:finance-service").projectDir = file("back-end/finance-service")
 
-include("back-end:house-service")
-project(":back-end:house-service").projectDir = file("back-end/house-service")
+include("back-end:portfolio-service")
+project(":back-end:portfolio-service").projectDir = file("back-end/portfolio-service")

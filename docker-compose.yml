@@ -1,10 +1,7 @@
-version: '3.8'
-
 services:
   # The central database
   db:
     image: postgres:15
-    container_name: studenthouse-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: database
@@ -14,33 +11,36 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
     networks:
-      - studenthouse-network
+      - stockanalytics-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # The Eureka Discovery Server
   eureka-server:
     build:
       context: ./back-end/eureka-server
-      dockerfile: Dockerfile
-    container_name: eureka-server
+      dockerfile: Dockerfile.dev
     ports:
       - "8761:8761"
     networks:
-      - studenthouse-network
+      - stockanalytics-network
     volumes:
-      # Mount the finance-service's local code
-      - ./back-end/eureka-server:/app
+      - ./back-end/eureka-server:/app:cached
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 200
 
   # The API Gateway
   api-gateway:
     build:
       context: ./back-end/gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
+      dockerfile: Dockerfile.dev
     ports:
       - "8080:8080"
     environment:
@@ -50,15 +50,63 @@ services:
       eureka-server:
         condition: service_healthy
     networks:
-      - studenthouse-network
+      - stockanalytics-network
     volumes:
-      # Mount the finance-service's local code
-      - ./back-end/gateway:/app
+      - ./back-end/gateway:/app:cached
+
+# Python google ADK agent
+#  agent:
+#    build:
+#      context: ./back-end/agent
+#      dockerfile: Dockerfile
+#    container_name: agent
+#    env_file:
+#      - .env
+#    networks:
+#      - stockanalytics-network
+#    volumes:
+#      - ./back-end/agent:/app:cached
+
+  # stock ticker data
+  alpha-service:
+    build:
+      context: ./back-end/alpha-service
+      dockerfile: Dockerfile
+    container_name: alpha-service
+    environment:
+      - ALPHA_API_KEY=${ALPHA_API_KEY}
+    networks:
+      - stockanalytics-network
+    volumes:
+      - ./back-end/alpha-service:/app:cached
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - stockanalytics-network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
 
   # The Auth Service
   auth-service:
-    build: ./back-end/auth-service
-    container_name: auth-service
+    build:
+      context: ./back-end/auth-service
+      dockerfile: Dockerfile.dev
     ports:
       - "8081:8081"
     environment:
@@ -70,38 +118,61 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
     networks:
-      - studenthouse-network
+      - stockanalytics-network
     volumes:
-      - ./back-end/auth-service:/app
+      - ./back-end/auth-service:/app:cached
+
+  # The Portfolio Service
+  portfolio-service:
+    build:
+      context: ./back-end/portfolio-service
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: ${DB_URL_PORTFOLIO}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - stockanalytics-network
+    volumes:
+      - ./back-end/portfolio-service:/app:cached
 
   # The Finance Service
   finance-service:
-    build: ./back-end/finance-service
-    container_name: finance-service
+    build:
+      context: ./back-end/finance-service
+      dockerfile: Dockerfile.dev
     ports:
-      - "8082:8082"
+      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: ${DB_URL_FINANCE}
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
     networks:
-      - studenthouse-network
+      - stockanalytics-network
     volumes:
-      # Mount the finance-service's local code
-      - ./back-end/finance-service:/app
+      - ./back-end/finance-service:/app:cached
 
 volumes:
   pgdata:
+  esdata:
 
 networks:
-  studenthouse-network:
+  stockanalytics-network:
     driver: bridge

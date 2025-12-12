@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import {useApi} from "@/lib/useApi";
 
 export default function LoginPage() {
     const router = useRouter();
     const { setAccessToken } = useAuth();
+    const { apiFetch } = useApi();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("https://localhost:8080/auth/login", {
+            const res = await fetch("auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -33,12 +35,13 @@ export default function LoginPage() {
                 setLoading(false);
                 return;
             }
-
+            // Save access token
             setAccessToken(body.accessToken);
+            router.push("/dashboard");
+
             setLoading(false);
-            router.push("/");
-        } catch (err) {
-            setError("Network error, try again later");
+        } catch (err: any) {
+            setError(err.message || "Network error, try again later");
             setLoading(false);
         }
     }
