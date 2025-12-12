@@ -1,0 +1,20 @@
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+# Copy Gradle wrapper and build scripts (will later be overridden by volumes)
+COPY gradlew /app/gradlew
+COPY build.gradle settings.gradle /app/
+COPY gradle /app/gradle
+
+# Make sure gradlew is executable
+RUN chmod +x ./gradlew
+
+# Pre-fetch dependencies (optional: speeds up first boot)
+RUN ./gradlew --no-daemon dependencies || true
+
+# Expose port (override per service if needed)
+EXPOSE 8082
+
+# Default command: run with Spring Boot DevTools (live reload on code changes)
+CMD ["./gradlew", "bootRun", "--no-daemon"]
