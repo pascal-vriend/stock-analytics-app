@@ -59,7 +59,7 @@ export default function PortfolioPage() {
     }, [holdings]);
 
     const dailyReturns = useMemo(() => {
-        // simple daily returns mock from portfolioTimeSeries
+        // Mock:
         return portfolioTimeSeries.map((p) => ({ date: p.date, value: p.value }));
     }, []);
 

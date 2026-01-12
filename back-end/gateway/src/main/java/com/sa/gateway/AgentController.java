@@ -28,10 +28,8 @@ public class AgentController {
 
     /**
      * Handles POST requests to run an AI query.
-     * Maps to: POST /api/v1/ai/query (via the existing 'api_route' path prefix in application.properties)
-     *
      * @param request The user's prompt.
-     * @return A Mono emitting the structured response from the AI.
+     * @return A Mono that gives the structured response from the AI.
      */
     @PostMapping("/query")
     public Mono<AgentClient.AgentResponse> getAiResponse(@RequestBody AiQueryRequest request) {

@@ -72,7 +72,6 @@ export default function Header({
             }
 
             const savedItem = await res.json();
-            // Optionally update local state
             onAddStock(savedItem.symbol, savedItem.quantity, savedItem.buyPrice);
 
             setModalOpen(false);
@@ -82,8 +81,6 @@ export default function Header({
         }
     };
 
-
-    // Fetch autocomplete suggestions with debounce
     useEffect(() => {
         if (!query) {
             setSuggestions([]);
@@ -108,7 +105,6 @@ export default function Header({
         return () => clearTimeout(timeout);
     }, [query]);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (!dropdownRef.current?.contains(e.target as Node)) {
@@ -193,7 +189,6 @@ export default function Header({
                 </div>
             </header>
 
-            {/* Add Stock Modal */}
             {selectedSymbol && (
                 <AddStockModal
                     symbol={selectedSymbol}

@@ -216,10 +216,11 @@ public class AuthController {
 
 
     @PostMapping("/delete-account")
+    // Might need saga pattern or event driven, to call other services that delete user data.
     public ResponseEntity<?> deleteAccount() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String email = auth.getName(); // principal is email
+            String email = auth.getName();
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException("User not found"));
 

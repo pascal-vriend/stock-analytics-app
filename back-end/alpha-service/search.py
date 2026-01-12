@@ -18,11 +18,8 @@ def search_stocks(query: str = Query(..., min_length=1)):
             "query": {
                 "bool": {
                     "should": [
-                        # Fuzzy match on company name
                         {"match": {"name": {"query": query, "fuzziness": "AUTO"}}},
-                        # Exact or prefix match on symbol
                         {"prefix": {"symbol": query.upper()}},
-                        # Use completion suggest for autocomplete (optional)
                         {
                             "match_phrase_prefix": {
                                 "name": {"query": query}

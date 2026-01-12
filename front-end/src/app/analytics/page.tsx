@@ -23,58 +23,6 @@ export default function AgentPage() {
         setMessages((prev) => [...prev, m]);
     }
 
-    function extractTextFromAgentResponse(json: any): string {
-        // Try several common ADK / agent response shapes (best-effort)
-        try {
-            if (!json) return "";
-
-            // 1) Some ADK A2A / to_a2a endpoints return an events array
-            if (Array.isArray(json)) {
-                // try to find the last 'message' event
-                for (let i = json.length - 1; i >= 0; i--) {
-                    const e = json[i];
-                    if (!e) continue;
-                    if (typeof e === "string") return e;
-                    if (e.type === "final_response" && e.text) return e.text;
-                    if (e.type === "message" && e.text) return e.text;
-                    if (e.output && Array.isArray(e.output)) {
-                        const maybe = e.output.map((o: any) => o.text || (o.content && o.content[0]?.text)).filter(Boolean)[0];
-                        if (maybe) return maybe;
-                    }
-                }
-            }
-
-            // 2) Top-level result / output
-            if (json.result?.output?.length) {
-                const firstOut = json.result.output[0];
-                if (firstOut.content && firstOut.content[0]?.text) return firstOut.content[0].text;
-                if (firstOut.text) return firstOut.text;
-            }
-
-            // 3) Simple shape: { text: "..." } or { output_text: "..." }
-            if (json.text && typeof json.text === "string") return json.text;
-            if (json.output_text && typeof json.output_text === "string") return json.output_text;
-
-            // 4) If ADK returns messages array
-            if (json.messages && Array.isArray(json.messages)) {
-                const last = json.messages[json.messages.length - 1];
-                if (last?.text) return last.text;
-                if (last?.content && last.content[0]?.text) return last.content[0].text;
-            }
-
-            // 5) If tool responses are embedded
-            if (json.events && Array.isArray(json.events)) {
-                const msg = json.events.find((e: any) => e.type === "message" || e.type === "final_response");
-                if (msg?.text) return msg.text;
-            }
-
-            // fallback: pretty JSON
-            return JSON.stringify(json, null, 2);
-        } catch (err) {
-            return String(err);
-        }
-    }
-
     async function handleSend(e?: React.FormEvent) {
         e?.preventDefault();
         const trimmed = prompt.trim();
@@ -103,7 +51,7 @@ export default function AgentPage() {
             }
 
             const json = await resp.json();
-            const extracted = json.text || JSON.stringify(json, null, 2); // AgentClient returns {text, sources}
+            const extracted = json.text || JSON.stringify(json, null, 2);
             pushMessage({ id: String(Date.now()) + "-a", role: "agent", text: extracted });
         } catch (err: any) {
             const msg = String(err.message || err);
@@ -112,11 +60,6 @@ export default function AgentPage() {
         } finally {
             setLoading(false);
         }
-    }
-
-    function lastAttemptError(endpoint: string, status: number, detail: any) {
-        const msg = `Attempt to ${endpoint} failed (status=${status}) - ${typeof detail === "string" ? detail : JSON.stringify(detail)}`;
-        setLastError((prev) => (prev ? prev + "\n" + msg : msg));
     }
 
     return (

@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshAccessToken();
     }, []);
 
-    // Persist token to localStorage
+
     useEffect(() => {
         if (accessToken) {
             localStorage.setItem('accessToken', accessToken);

@@ -44,7 +44,7 @@ export default function Dashboard() {
                     throw new Error(`API error ${res.status}: ${text}`);
                 }
 
-                const json = await res.json(); // Should match PortfolioResponse from backend
+                const json = await res.json();
                 if (!cancelled) {
                     setHoldings(json.holdings || []);
                     setLoading(false);
@@ -124,7 +124,7 @@ export default function Dashboard() {
                             <StockCard
                                 key={h.symbol}
                                 symbol={h.symbol}
-                                companyName={h.symbol} // Optional: fetch real name from backend
+                                companyName={h.symbol}
                                 priceData={prices[h.symbol] || null}
                                 loading={!prices[h.symbol]}
                                 error={!prices[h.symbol] ? "Failed to load price" : null}

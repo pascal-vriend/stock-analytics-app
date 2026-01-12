@@ -23,7 +23,6 @@ export function useApi() {
             credentials: 'include',
         });
 
-        // Optional: auto-retry once on 401
         if (first.status === 401) {
             const newToken = await refreshAccessToken();
             if (newToken) {

@@ -20,12 +20,10 @@ public class AgentClient {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    // Use the Docker service name as the base URL
     private static final String AGENT_BASE_URL = "http://agent:8001";
     private static final String GENERATE_ENDPOINT = "/generate";
 
     public AgentClient(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
-        // Initialize WebClient instance pointing to the internal agent service
         this.webClient = webClientBuilder.baseUrl(AGENT_BASE_URL).build();
         this.objectMapper = objectMapper;
     }
@@ -44,10 +42,10 @@ public class AgentClient {
 
 
     /**
-     * Calls the internal /generate endpoint on the Gemini Agent service.
+     * Calls the internal /generate endpoint on the gemini agent service.
      *
      * @param userPrompt The prompt to send to the AI model.
-     * @return A Mono emitting the response data from the AI.
+     * @return A Mono giving the response data from the AI.
      */
     public Mono<AgentResponse> generateResponseFromAgent(String userPrompt) {
 
@@ -59,8 +57,6 @@ public class AgentClient {
                 .uri(GENERATE_ENDPOINT)
                 .bodyValue(requestBody)
                 .retrieve()
-                // Map 4xx and 5xx errors to a custom exception if needed,
-                // but for now, we just let WebClient throw WebClientResponseException
                 .bodyToMono(JsonNode.class)
                 .map(this::processAgentResponse)
                 .onErrorResume(e -> {

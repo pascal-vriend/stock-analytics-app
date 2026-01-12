@@ -23,7 +23,6 @@ import {
 interface StockCardProps {
     symbol: string;
     companyName: string;
-    // priceData comes from the API (current, change, percent)
     priceData?: {
         current: number;
         change: number;
@@ -38,13 +37,12 @@ interface PricePoint {
     price: number;
 }
 
-// If we have a single current price, synthesize a small history around it
+// mock data:
 function synthesizeHistory(current: number, points = 20): PricePoint[] {
     const data: PricePoint[] = [];
     let price = current;
     for (let i = 0; i < points; i++) {
-        // small random walk around current price
-        const delta = (Math.random() - 0.5) * (current * 0.002); // ~0.2% noise
+        const delta = (Math.random() - 0.5) * (current * 0.002);
         price = Math.max(0.01, price + delta);
         data.push({ time: `T${i}`, price: parseFloat(price.toFixed(2)) });
     }
@@ -58,7 +56,6 @@ export function StockCard({
                               loading,
                               error,
                           }: StockCardProps) {
-    // derive values and history
     const current = priceData?.current ?? 0;
     const change = priceData?.change ?? 0;
     const percent = priceData?.percent ?? 0;
@@ -108,7 +105,6 @@ export function StockCard({
                             <Line
                                 type="monotone"
                                 dataKey="price"
-                                // keep stroke color in sync with positive/negative change
                                 stroke={isPositive ? undefined : undefined}
                                 dot={false}
                             />
