@@ -54,18 +54,20 @@ services:
     volumes:
       - ./back-end/gateway:/app:cached
 
-# Python google ADK agent
-#  agent:
-#    build:
-#      context: ./back-end/agent
-#      dockerfile: Dockerfile
-#    container_name: agent
-#    env_file:
-#      - .env
-#    networks:
-#      - stockanalytics-network
-#    volumes:
-#      - ./back-end/agent:/app:cached
+  # Python Google ADK agent
+  agent:
+    build:
+      context: ./back-end/agent
+      dockerfile: Dockerfile
+    container_name: agent
+    env_file:
+      - .env
+    depends_on:
+      - alpha-service
+    networks:
+      - stockanalytics-network
+    volumes:
+      - ./back-end/agent:/app:cached
 
   # stock ticker data
   alpha-service:
