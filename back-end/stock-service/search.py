@@ -4,7 +4,7 @@ import os
 import logging
 
 router = APIRouter()
-log = logging.getLogger("alpha-search")
+log = logging.getLogger("stock-search")
 logging.basicConfig(level=logging.INFO)
 
 ES_HOST = os.getenv("ELASTICSEARCH_HOST", "http://elasticsearch:9200")

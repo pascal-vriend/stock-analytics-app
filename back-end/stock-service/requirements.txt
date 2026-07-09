@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+requests
+yfinance
+elasticsearch>=8.0.0,<9.0.0

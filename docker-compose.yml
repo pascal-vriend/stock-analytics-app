@@ -63,24 +63,24 @@ services:
     env_file:
       - .env
     depends_on:
-      - alpha-service
+      - stock-service
     networks:
       - stockanalytics-network
     volumes:
       - ./back-end/agent:/app:cached
 
   # stock ticker data
-  alpha-service:
+  stock-service:
     build:
-      context: ./back-end/alpha-service
+      context: ./back-end/stock-service
       dockerfile: Dockerfile
-    container_name: alpha-service
+    container_name: stock-service
     environment:
       - ALPHA_API_KEY=${ALPHA_API_KEY}
     networks:
       - stockanalytics-network
     volumes:
-      - ./back-end/alpha-service:/app:cached
+      - ./back-end/stock-service:/app:cached
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0

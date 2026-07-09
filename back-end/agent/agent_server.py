@@ -19,7 +19,7 @@ def get_stock_quote(ticker: str) -> dict:
     """Get the latest price, absolute change, and percent change for a stock
     ticker symbol (e.g. 'AAPL', 'MSFT'). Use this whenever the user asks about
     a stock's current price or recent performance."""
-    resp = requests.get(f"http://alpha-service:8000/stocks/{ticker}", timeout=10)
+    resp = requests.get(f"http://stock-service:8000/stocks/{ticker}", timeout=10)
     resp.raise_for_status()
     return resp.json()
 
@@ -27,7 +27,7 @@ def get_stock_quote(ticker: str) -> dict:
 root_agent = Agent(
     name="stock_analyst",
     model="gemini-2.5-flash",
-    description="Analyzes stocks using live market data from the alpha-service.",
+    description="Analyzes stocks using live market data from the stock-service.",
     instruction=(
         "You are a stock-analysis assistant for a portfolio app. When a user asks "
         "about a stock, call get_stock_quote to fetch live data, then explain the "
@@ -76,7 +76,7 @@ async def generate(request: dict):
             if fc and fc.name == "get_stock_quote":
                 ticker = (fc.args or {}).get("ticker", "").upper()
                 source = {
-                    "uri": f"http://alpha-service:8000/stocks/{ticker}",
+                    "uri": f"http://stock-service:8000/stocks/{ticker}",
                     "title": f"Live market quote: {ticker}",
                 }
                 if source not in sources:
